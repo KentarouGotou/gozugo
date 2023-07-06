@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/KentarouGotou/calculator"
+	"calculator"
 )
 
 func main() {
