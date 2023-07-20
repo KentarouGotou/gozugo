@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"calculator"
+	"github.com/KentarouGotou/gozugo/src/calculator"
 )
 
 func main() {
@@ -11,4 +11,3 @@ func main() {
 	fmt.Println(total)
 	fmt.Println("Version: ", calculator.Version)
 }
-.,.mm
