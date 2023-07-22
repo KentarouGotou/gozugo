@@ -1,36 +1,36 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-// Message structはレスポンスとして返すメッセージを表します。
-type Message struct {
-	Text string `json:"message"`
+// Todoを表す構造体を定義
+type todo struct {
+	ID     int    `json:"id"`
+	Title  string `json:"title"`
+	Author string `json:"author"`
 }
 
-// メインのハンドラ関数
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	// メッセージを作成
-	message := Message{Text: "Hello, World!"}
+// Todoの一覧
+var todos = []todo{
+	{ID: 1, Title: "タイトルA", Author: "Taro"},
+	{ID: 2, Title: "タイトルB", Author: "Jiro"},
+	{ID: 3, Title: "タイトルC", Author: "Takuya"},
+}
 
-	// レスポンスをJSON形式で返す
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(message)
+// todosからjsonを作成する関数
+func getTodos(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, todos)
 }
 
 func main() {
-	// ルータを作成
-	r := mux.NewRouter()
+	// ルーターの初期化
+	router := gin.Default()
+	// /todosにアクセスしたときにgetTodosを呼び出す
+	router.GET("/todos", getTodos)
 
-	// ハンドラを設定
-	r.HandleFunc("/hello", helloHandler).Methods("GET")
-
-	// サーバを開始
-	log.Println("APIサーバをポート8080で起動中...")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	// サーバーを起動
+	router.Run("localhost:8080")
 }
