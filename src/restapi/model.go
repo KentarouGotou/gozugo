@@ -6,15 +6,25 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// User struct
+type User struct {
+	UserId   int    `json:"user_id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+// Note struct
 type Note struct {
+	NoteId   int       `json:"note_id"`
 	Position [6]string `json:"position"`
 	Ties     [6]string `json:"ties"`
 	Effects  [6]string `json:"effects"`
 	Duration int       `json:"duration"`
 }
 
+// Tab struct
 type Tab struct {
-	Id     int    `json:"id"`
+	TabId  int    `json:"tab_id"`
 	Artist string `json:"artist"`
 	Title  string `json:"title"`
 	Notes  []Note `json:"notes"`
@@ -74,21 +84,49 @@ func init() {
 	}
 }
 
-func GetNotesforTab(id int) []Note {
-	rows, err := Db.Query("select * from notes where tab_id = ?", id)
+// Users list
+func GetUsers() (users []User, err error) {
+	// Query the database for all users
+	rows, err := Db.Query("select * from users")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer rows.Close()
 
-	var notes []Note
 	for rows.Next() {
-		var note Note
-		err := rows.Scan(&note.Position, &note.Ties, &note.Effects, &note.Duration)
+		user := User{}
+		err = rows.Scan(&user.UserId, &user.Username, &user.Password)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
-		notes = append(notes, note)
+		users = append(users, user)
 	}
-	return notes
+	return
+}
+
+// User by id
+func GetUser(id int) (user User, err error) {
+	user = User{}
+	err = Db.QueryRow("select * from users where user_id = ?", id).Scan(&user.UserId, &user.Username, &user.Password)
+	return
+}
+
+// User by username
+func GetUserByUsername(username string) (user User, err error) {
+	user = User{}
+	err = Db.QueryRow("select * from users where username = ?", username).Scan(&user.UserId, &user.Username, &user.Password)
+	return
+}
+
+// Create user
+func (user *User) CreateUser() (err error) {
+	statement := "insert into users (username, password) values (?, ?)"
+	stmt, err := Db.Prepare(statement)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(user.Username, user.Password)
+	return
 }
