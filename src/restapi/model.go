@@ -87,7 +87,7 @@ func init() {
 // Users list
 func GetUsers() (users []User, err error) {
 	// Query the database for all users
-	rows, err := Db.Query("select * from users")
+	rows, err := Db.Query("SELECT * FROM users")
 	if err != nil {
 		return nil, err
 	}
@@ -107,20 +107,20 @@ func GetUsers() (users []User, err error) {
 // User by id
 func GetUser(id int) (user User, err error) {
 	user = User{}
-	err = Db.QueryRow("select * from users where user_id = ?", id).Scan(&user.UserId, &user.Username, &user.Password)
+	err = Db.QueryRow("SELECT * FROM users WHERE user_id = ?", id).Scan(&user.UserId, &user.Username, &user.Password)
 	return
 }
 
 // User by username
 func GetUserByUsername(username string) (user User, err error) {
 	user = User{}
-	err = Db.QueryRow("select * from users where username = ?", username).Scan(&user.UserId, &user.Username, &user.Password)
+	err = Db.QueryRow("SELECT * FROM users WHERE username = ?", username).Scan(&user.UserId, &user.Username, &user.Password)
 	return
 }
 
 // Create user
 func (user *User) CreateUser() (err error) {
-	statement := "insert into users (username, password) values (?, ?)"
+	statement := "INSERT INTO users (username, password) VALUES (?, ?)"
 	stmt, err := Db.Prepare(statement)
 	if err != nil {
 		return
@@ -128,5 +128,31 @@ func (user *User) CreateUser() (err error) {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(user.Username, user.Password)
+	return
+}
+
+// Update user
+func (user *User) UpdateUser() (err error) {
+	statement := "UPDATE users SET username = ?, password = ? WHERE user_id = ?"
+	stmt, err := Db.Prepare(statement)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(user.Username, user.Password, user.UserId)
+	return
+}
+
+// Delete user
+func (user *User) DeleteUser() (err error) {
+	statement := "DELETE FROM users WHERE user_id = ?"
+	stmt, err := Db.Prepare(statement)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(user.UserId)
 	return
 }
